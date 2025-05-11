@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard Charts</title>
+    <!-- Include Chart.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        /* Reset and general styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header styles */
+        header {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem 1rem;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        /* Main content area */
+        main {
+            flex-grow: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Tab navigation */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-button {
+            padding: 1rem 0.25rem;
+            margin-right: 2rem;
+            border: none;
+            background: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-button:hover {
+            color: #374151;
+            border-bottom-color: #d1d5db;
+        }
+
+        .tab-button.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+
+        /* Tab content container */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Loading state */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 16rem;
+        }
+
+        .loading-text {
+            color: #6b7280;
+        }
+
+        /* Chart containers */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .charts-grid.full-width {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background-color: white;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        .chart-card h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .stat-card {
+            padding: 1rem;
+            border-radius: 0.375rem;
+        }
+
+        .stat-card.blue {
+            background-color: #eff6ff;
+        }
+
+        .stat-card.green {
+            background-color: #ecfdf5;
+        }
+
+        .stat-card.yellow {
+            background-color: #fffbeb;
+        }
+
+        .stat-card.purple {
+            background-color: #f5f3ff;
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .stat-card.blue h3 {
+            color: #1e40af;
+        }
+
+        .stat-card.green h3 {
+            color: #065f46;
+        }
+
+        .stat-card.yellow h3 {
+            color: #92400e;
+        }
+
+        .stat-card.purple h3 {
+            color: #5b21b6;
+        }
+
+        .stat-card p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .stat-card span {
+            font-size: 0.875rem;
+        }
+
+        .stat-card.blue span {
+            color: #2563eb;
+        }
+
+        .stat-card.green span {
+            color: #10b981;
+        }
+
+        .stat-card.yellow span {
+            color: #d97706;
+        }
+
+        .stat-card.purple span {
+            color: #7c3aed;
+        }
+
+        /* User metrics */
+        .user-metrics {
+            background-color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+
+        .user-metrics h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .user-metrics p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.25rem 0 0.5rem;
+        }
+
+        .metric-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 9999px;
+        }
+
+        .progress-fill.blue {
+            background-color: #2563eb;
+        }
+
+        .progress-fill.green {
+            background-color: #10b981;
+        }
+
+        .progress-fill.yellow {
+            background-color: #d97706;
+        }
+
+        /* Footer */
+        footer {
+            background-color: white;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Admin Dashboard</h1>
+        </div>
+    </header>
+
+    <main>
+        <!-- Tabs navigation -->
+        <div class="tabs">
+            <button class="tab-button active" data-tab="overview">Overview</button>
+            <button class="tab-button" data-tab="bookings">Bookings</button>
+            <button class="tab-button" data-tab="users">Users</button>
+            <button class="tab-button" data-tab="revenue">Revenue</button>
+        </div>
+
+        <!-- Loading state (hidden by default) -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="loading-text">Loading charts...</div>
+        </div>
+
+        <!-- Tab content containers -->
+        <div class="tab-content active" id="overview-tab">
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h2>Monthly Bookings</h2>
+                    <div class="chart-container">
+                        <canvas id="bookingsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h2>User Distribution</h2>
+                    <div class="chart-container">
+                        <canvas id="userPieChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card" style="grid-column: span 2;">
+                    <h2>Weekly Revenue</h2>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="bookings-tab">
+            <div class="chart-card">
+                <h2>Booking Statistics</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card blue">
+                        <h3>Total Bookings</h3>
+                        <p>580</p>
+                        <span>+12% from last month</span>
+                    </div>
+                    <div class="stat-card green">
+                        <h3>Completed</h3>
+                        <p>483</p>
+                        <span>93% completion rate</span>
+                    </div>
+                    <div class="stat-card yellow">
+                        <h3>Pending</h3>
+                        <p>97</p>
+                        <span>22 require attention</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="bookingsDetailChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="users-tab">
+            <div class="chart-card">
+                <h2>User Analysis</h2>
+
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <canvas id="usersPieDetail"></canvas>
+                    </div>
+
+                    <div>
+                        <div class="user-metrics">
+                            <h3>Total Registered Users</h3>
+                            <p>230</p>
+                            <div class="metric-label">
+                                <span>Growth</span>
+                                <span>+15% (last 30 days)</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill blue" style="width: 15%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="user-metrics">
+                            <h3>Active Users</h3>
+                            <p>185</p>
+                            <div class="metric-label">
+                                <span>Engagement</span>
+                                <span>80% of total users</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill green" style="width: 80%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="user-metrics">
+                            <h3>Premium Conversion</h3>
+                            <p>19.6%</p>
+                            <div class="metric-label">
+                                <span>Target</span>
+                                <span>20%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill yellow" style="width: 98%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="revenue-tab">
+            <div class="chart-card">
+                <h2>Revenue Overview</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card green">
+                        <h3>Monthly Revenue</h3>
+                        <p>$12,580</p>
+                        <span>+8% from last month</span>
+                    </div>
+                    <div class="stat-card blue">
+                        <h3>Average Order</h3>
+                        <p>$124.50</p>
+                        <span>+2.5% from last month</span>
+                    </div>
+                    <div class="stat-card purple">
+                        <h3>Premium Users</h3>
+                        <p>45</p>
+                        <span>19.6% of users</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="revenueDetailChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-container">
+            <div class="footer-text">
+                © 2025 Your Company. All rights reserved.
+            </div>
+            <div class="footer-text">
+                Last updated: May 10, 2025
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Sample data
+        const bookingsData = [
+            { month: 'Jan', count: 65 },
+            { month: 'Feb', count: 78 },
+            { month: 'Mar', count: 82 },
+            { month: 'Apr', count: 70 },
+            { month: 'May', count: 85 },
+            { month: 'Jun', count: 92 },
+            { month: 'Jul', count: 108 }
+        ];
+
+        const userData = [
+            { name: 'New Users', value: 58 },
+            { name: 'Returning', value: 127 },
+            { name: 'Premium', value: 45 }
+        ];
+
+        const revenueData = [
+            { day: 'Mon', revenue: 1200 },
+            { day: 'Tue', revenue: 1400 },
+            { day: 'Wed', revenue: 1800 },
+            { day: 'Thu', revenue: 1600 },
+            { day: 'Fri', revenue: 2200 },
+            { day: 'Sat', revenue: 2600 },
+            { day: 'Sun', revenue: 2100 }
+        ];
+
+        // Chart.js colors
+        const chartColors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'];
+
+        // Initialize tabs
+        document.addEventListener('DOMContentLoaded', function () {
+            // Show loading spinner
+            document.getElementById('loading').style.display = 'flex';
+
+            // Tab switching
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    // Remove active class from all tabs
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab') + '-tab';
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Initialize charts after a short delay to simulate loading
+            setTimeout(initializeCharts, 500);
+        });
+
+        function initializeCharts() {
+            // Hide loading spinner
+            document.getElementById('loading').style.display = 'none';
+
+            // Monthly Bookings Bar Chart
+            const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
+            const bookingsChart = new Chart(bookingsCtx, {
+                type: 'bar',
+                data: {
+                    labels: bookingsData.map(item => item.month),
+                    datasets: [{
+                        label: 'Bookings',
+                        data: bookingsData.map(item => item.count),
+                        backgroundColor: chartColors[0],
+                        borderColor: chartColors[0],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // User Distribution Pie Chart
+            const userPieCtx = document.getElementById('userPieChart').getContext('2d');
+            const userPieChart = new Chart(userPieCtx, {
+                type: 'pie',
+                data: {
+                    labels: userData.map(item => item.name),
+                    datasets: [{
+                        data: userData.map(item => item.value),
+                        backgroundColor: chartColors.slice(0, userData.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Weekly Revenue Line Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: revenueData.map(item => item.day),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: revenueData.map(item => item.revenue),
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: chartColors[1],
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return '$' + context.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Bookings Detail Chart
+            const bookingsDetailCtx = document.getElementById('bookingsDetailChart').getContext('2d');
+            const bookingsDetailChart = new Chart(bookingsDetailCtx, {
+                type: 'bar',
+                data: {
+                    labels: bookingsData.map(item => item.month),
+                    datasets: [{
+                        label: 'Total Bookings',
+                        data: bookingsData.map(item => item.count),
+                        backgroundColor: chartColors[0],
+                        borderColor: chartColors[0],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // User Pie Detail Chart
+            const usersPieDetailCtx = document.getElementById('usersPieDetail').getContext('2d');
+            const usersPieDetail = new Chart(usersPieDetailCtx, {
+                type: 'pie',
+                data: {
+                    labels: userData.map(item => item.name),
+                    datasets: [{
+                        data: userData.map(item => item.value),
+                        backgroundColor: chartColors.slice(0, userData.length),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Revenue Detail Chart
+            const revenueDetailCtx = document.getElementById('revenueDetailChart').getContext('2d');
+            const revenueDetailChart = new Chart(revenueDetailCtx, {
+                type: 'line',
+                data: {
+                    labels: revenueData.map(item => item.day),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: revenueData.map(item => item.revenue),
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: chartColors[1],
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return '$' + context.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // In a real application, you would fetch data from your backend
+        // Here's an example of how you might do that:
+
+        /*
+        async function fetchDashboardData() {
+            try {
+                // Show loading state
+                document.getElementById('loading').style.display = 'flex';
+                
+                // Fetch data from your backend API
+                const response = await fetch('/api/dashboard-data');
+                const data = await response.json();
+                
+                // Update charts with the fetched data
+                // ...
+                
+                // Hide loading state
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                document.getElementById('loading').style.display = 'none';
+                // Show error message to user
+            }
+        }
+        
+        // Call this function when the page loads
+        // fetchDashboardData();
+        */
+    </script>
+</body>
+
+</html>

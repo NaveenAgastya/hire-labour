@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Booking Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* General Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            padding: 30px;
+        }
+        
+        h2 {
+            color: #2a5885;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        h3 {
+            color: #2a5885;
+            margin-bottom: 20px;
+        }
+        
+        h4 {
+            color: #2a5885;
+            margin-bottom: 10px;
+        }
+        
+        /* Form Elements */
+        .form-step {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .form-step.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #2a5885;
+            outline: none;
+        }
+        
+        .form-control.error {
+            border-color: #dc3545;
+        }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .error-message.visible {
+            display: block;
+        }
+        
+        /* Buttons */
+        .form-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: #2a5885;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1e3f64;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #2a5885;
+            color: #2a5885;
+            padding: 11px 18px;
+        }
+        
+        .btn-outline:hover {
+            background-color: #f1f5f9;
+        }
+        
+        /* Checkbox & Radio Styles */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        /* Worker Selection Grid */
+        .worker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .worker-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .worker-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .worker-avatar {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+        }
+        
+        .worker-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .worker-rating {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background-color: #ffc107;
+            color: #333;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
+        .worker-item h4 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .worker-item p {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        /* Payment Methods */
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .payment-method {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .payment-method:hover {
+            border-color: #2a5885;
+        }
+        
+        .payment-method input[type="radio"] {
+            display: none;
+        }
+        
+        .payment-method label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+        
+        .payment-method label i {
+            font-size: 24px;
+        }
+        
+        .payment-method input[type="radio"]:checked + label {
+            color: #2a5885;
+            font-weight: bold;
+        }
+        
+        .payment-method input[type="radio"]:checked + label i {
+            color: #2a5885;
+        }
+        
+        .payment-form {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        
+        /* Progress Indicator */
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .progress-indicator::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 18px;
+            width: 100%;
+            height: 2px;
+            background-color: #ddd;
+            z-index: 1;
+        }
+        
+        .step-indicator {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+        
+        .step-circle {
+            width: 38px;
+            height: 38px;
+            background-color: #fff;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .step-title {
+            font-size: 14px;
+            color: #6c757d;
+            transition: color 0.3s;
+        }
+        
+        .step-indicator.active .step-circle {
+            border-color: #2a5885;
+            background-color: #2a5885;
+            color: white;
+        }
+        
+        .step-indicator.active .step-title {
+            color: #2a5885;
+            font-weight: 500;
+        }
+        
+        .step-indicator.completed .step-circle {
+            background-color: #2a5885;
+            border-color: #2a5885;
+            color: white;
+        }
+        
+        /* Booking Summary */
+        .booking-summary, .price-breakdown {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item, .price-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .summary-item:last-child, .price-item:last-child {
+            border-bottom: none;
+        }
+        
+        .price-item.total {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2a5885;
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        .price-item.discount {
+            color: #28a745;
+        }
+        
+        .promo-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .progress-indicator {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .worker-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .payment-methods {
+                flex-direction: column;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Worker Booking</h2>
+        
+        <!-- Progress Indicator -->
+        <div class="progress-indicator">
+            <div class="step-indicator active" data-step="1">
+                <div class="step-circle">1</div>
+                <div class="step-title">Service</div>
+            </div>
+            <div class="step-indicator" data-step="2">
+                <div class="step-circle">2</div>
+                <div class="step-title">Location</div>
+            </div>
+            <div class="step-indicator" data-step="3">
+                <div class="step-circle">3</div>
+                <div class="step-title">Workers</div>
+            </div>
+            <div class="step-indicator" data-step="4">
+                <div class="step-circle">4</div>
+                <div class="step-title">Payment</div>
+            </div>
+        </div>
+        
+        <form id="bookingForm">
+            <!-- Step 1: Service Selection -->
+            <div class="form-step active">
+                <h3 class="mb-3">Select Your Service</h3>
+                
+                <div class="form-group">
+                    <label for="serviceType">Service Type</label>
+                    <select id="serviceType" class="form-control" required>
+                        <option value="">Select a service</option>
+                        <option value="construction">Construction Help</option>
+                        <option value="moving">Moving Assistance</option>
+                        <option value="landscaping">Landscaping</option>
+                        <option value="cleaning">Cleaning Services</option>
+                        <option value="event">Event Setup</option>
+                        <option value="handyman">Handyman Services</option>
+                    </select>
+                    <div class="error-message" id="serviceType-error">Please select a service</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="numWorkers">Number of Workers</label>
+                    <select id="numWorkers" class="form-control">
+                        <option value="1">1 Worker</option>
+                        <option value="2">2 Workers</option>
+                        <option value="3">3 Workers</option>
+                        <option value="4">4 Workers</option>
+                        <option value="5">5+ Workers</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookingDate">Date</label>
+                        <input type="date" id="bookingDate" class="form-control" required>
+                        <div class="error-message" id="bookingDate-error">Please select a date</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bookingTime">Time</label>
+                        <input type="time" id="bookingTime" class="form-control" required>
+                        <div class="error-message" id="bookingTime-error">Please select a time</div>
+                    </div>
+                </div>
+                
+                <div class="form-buttons">
+                    <div></div> <!-- Empty div for alignment -->
+                    <button type="button" class="btn btn-primary" id="step1Next">Continue</button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Location Details -->
+            <div class="form-step">
+                <h3 class="mb-3">Location & Details</h3>
+                
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address" class="form-control" placeholder="Enter the job location" required>
+                    <div class="error-message" id="address-error">Please enter your address</div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" class="form-control" required>
+                        <div class="error-message" id="city-error">Please enter your city</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="zipCode">PIN Code</label>
+                        <input type="text" id="zipCode" class="form-control" required>
+                        <div class="error-message" id="zipCode-error">Please enter a valid PIN code</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="jobDescription">Job Description</label>
+                    <textarea id="jobDescription" class="form-control" rows="4" placeholder="Provide details about the job, specific requirements, and any special instructions" required></textarea>
+                    <div class="error-message" id="jobDescription-error">Please enter job description</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="requirements">Special Requirements</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="toolsRequired">
+                        <label for="toolsRequired">Workers should bring tools</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="heavyLifting">
+                        <label for="heavyLifting">Heavy lifting required</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="urgentJob">
+                        <label for="urgentJob">Urgent job (within 24 hours)</label>
+                    </div>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" id="step2Prev">Back</button>
+                    <button type="button" class="btn btn-primary" id="step2Next">Continue</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Worker Preferences -->
+            <div class="form-step">
+                <h3 class="mb-3">Worker Preferences</h3>
+                
+                <div class="form-group">
+                    <label for="experienceLevel">Experience Level</label>
+                    <select id="experienceLevel" class="form-control" required>
+                        <option value="any">Any Experience Level</option>
+                        <option value="entry">Entry Level (0-2 years)</option>
+                        <option value="intermediate">Intermediate (2-5 years)</option>
+                        <option value="expert">Expert (5+ years)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="language">Preferred Language</label>
+                    <select id="language" class="form-control" required>
+                        <option value="any">Any Language</option>
+                        <option value="english">English</option>
+                        <option value="kannada">Kannada</option>
+                        <option value="hindi">Hindi</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="specificWorkers">Available Workers Based On Your Requirements</label>
+                    <div class="worker-grid">
+                        <div class="worker-item">
+                            <div class="worker-avatar">
+                                <img src="/api/placeholder/100/100" alt="Worker Avatar">
+                                <div class="worker-rating">
+                                    <i class="fas fa-star"></i> 4.9
+                                </div>
+                            </div>
+                            <h4>James Wilson</h4>
+                            <p>Construction Expert</p>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="worker1" class="worker-checkbox" value="1">
+                                <label for="worker1">Select</label>
+                            </div>
+                        </div>
+                        
+                        <div class="worker-item">
+                            <div class="worker-avatar">
+                                <img src="/api/placeholder/100/100" alt="Worker Avatar">
+                                <div class="worker-rating">
+                                    <i class="fas fa-star"></i> 4.8
+                                </div>
+                            </div>
+                            <h4>Maria Lopez</h4>
+                            <p>Moving Specialist</p>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="worker2" class="worker-checkbox" value="2">
+                                <label for="worker2">Select</label>
+                            </div>
+                        </div>
+                        
+                        <div class="worker-item">
+                            <div class="worker-avatar">
+                                <img src="/api/placeholder/100/100" alt="Worker Avatar">
+                                <div class="worker-rating">
+                                    <i class="fas fa-star"></i> 4.7
+                                </div>
+                            </div>
+                            <h4>David Chen</h4>
+                            <p>Handyman</p>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="worker3" class="worker-checkbox" value="3">
+                                <label for="worker3">Select</label>
+                            </div>
+                        </div>
+                        
+                        <div class="worker-item">
+                            <div class="worker-avatar">
+                                <img src="/api/placeholder/100/100" alt="Worker Avatar">
+                                <div class="worker-rating">
+                                    <i class="fas fa-star"></i> 4.9
+                                </div>
+                            </div>
+                            <h4>Sarah Johnson</h4>
+                            <p>Landscaping Pro</p>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="worker4" class="worker-checkbox" value="4">
+                                <label for="worker4">Select</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="error-message" id="workers-error">Please select at least one worker</div>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" id="step3Prev">Back</button>
+                    <button type="button" class="btn btn-primary" id="step3Next">Continue</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Review & Payment -->
+            <div class="form-step">
+                <h3 class="mb-3">Review & Payment</h3>
+                
+                <div class="booking-summary">
+                    <h4>Booking Summary</h4>
+                    <div class="summary-item">
+                        <span>Service:</span>
+                        <span id="summaryService">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Workers:</span>
+                        <span id="summaryWorkers">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Date & Time:</span>
+                        <span id="summaryDateTime">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Duration:</span>
+                        <span id="summaryDuration">4 hours</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Location:</span>
+                        <span id="summaryLocation">-</span>
+                    </div>
+                </div>
+                
+                <div class="price-breakdown">
+                    <h4>Price Breakdown</h4>
+                    <div class="price-item">
+                        <span>Worker Rate:</span>
+                        <span id="summaryRate">$25/hour × 1 worker × 4 hours</span>
+                        <span id="workerTotal">$100.00</span>
+                    </div>
+                    <div class="price-item">
+                        <span>Service Fee:</span>
+                        <span id="serviceFee">$20.00</span>
+                    </div>
+                    <div class="price-item discount" id="discountRow" style="display: none;">
+                        <span>Discount:</span>
+                        <span id="discountAmount">-$0.00</span>
+                    </div>
+                    <div class="price-item total">
+                        <span>Total:</span>
+                        <span id="totalAmount">$120.00</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="promoCode">Promo Code</label>
+                    <div class="promo-group">
+                        <input type="text" id="promoCode" class="form-control" placeholder="Enter promo code">
+                        <button type="button" class="btn btn-outline" id="applyPromo">Apply</button>
+                    </div>
+                    <div class="error-message" id="promo-error"></div>
+                    <div id="promo-success" style="color: green; display: none; margin-top: 5px;">Promo code applied successfully!</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <div class="payment-methods">
+                        <div class="payment-method">
+                            <input type="radio" name="paymentMethod" id="creditCard" value="creditCard" checked>
+                            <label for="creditCard">
+                                <i class="far fa-credit-card"></i>
+                                Credit Card
+                            </label>
+                        </div>
+                        <div class="payment-method">
+                            <input type="radio" name="paymentMethod" id="paypal" value="paypal">
+                            <label for="paypal">
+                                <i class="fab fa-paypal"></i>
+                                PayPal
+                            </label>
+                        </div>
+                        <div class="payment-method">
+                            <input type="radio" name="paymentMethod" id="venmo" value="venmo">
+                            <label for="venmo">
+                                <i class="fab fa-vimeo-v"></i>
+                                Venmo
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="creditCardForm" class="payment-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cardName">Name on Card</label>
+                            <input type="text" id="cardName" class="form-control">
+                            <div class="error-message" id="cardName-error">Please enter the name on your card</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cardNumber">Card Number</label>
+                            <input type="text" id="cardNumber" class="form-control" placeholder="•••• •••• •••• ••••">
+                            <div class="error-message" id="cardNumber-error">Please enter a valid card number</div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expDate">Expiration Date</label>
+                            <input type="text" id="expDate" class="form-control" placeholder="MM/YY">
+                            <div class="error-message" id="expDate-error">Please enter a valid expiration date (MM/YY)</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" class="form-control" placeholder="•••">
+                            <div class="error-message" id="cvv-error">Please enter a valid CVV</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="termsCheck">
+                        <label for="termsCheck">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                    </div>
+                    <div class="error-message" id="terms-error">You must agree to the terms to continue</div>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" id="step4Prev">Back</button>
+                    <button type="submit" class="btn btn-primary" id="submitBooking">Complete Booking</button>
+                </div>
+            </div>
+        </form>
+    </div>
+<script src="./booking.js"></script>
+    </body>
+    </html>

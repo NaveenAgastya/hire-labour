@@ -494,7 +494,7 @@
 
         function makePayment() {
     var options = {
-      key: "YOUR_RAZORPAY_KEY", // Your Razorpay API Key
+      key: "rzp_test_hIOpXSWVpEGXMN", // Your Razorpay API Key
       amount: "1000", // Amount in the smallest currency unit (for example, 1000 paise = 10 INR)
       currency: "INR", // Currency
       name: "My Website", // Your website name

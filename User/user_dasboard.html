@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillFinder - Labor Booking App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/fontawesome.min.css" integrity="sha512-v8QQ0YQ3H4K6Ic3PJkym91KoeNT5S3PnDKvqnwqFD1oiqIl653crGZplPdU5KKtHjO0QKcQ2aUlQZYjHczkmGw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Global Styles */
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --accent: #e74c3c;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: linear-gradient(135deg, var(--primary), #6a5acd);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+            animation: rotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .app-title {
+            margin: 0;
+            font-size: 2.5rem;
+            position: relative;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        nav {
+            background-color: white;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .navbar::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .navbar::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+        }
+
+        .navbar a {
+            color: var(--dark);
+            text-align: center;
+            padding: 18px 24px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .navbar a:hover, .navbar a.active {
+            color: var(--primary);
+        }
+
+        .navbar a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 3px;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .navbar a:hover::after, .navbar a.active::after {
+            width: 70%;
+        }
+
+        .navbar a i {
+            margin-right: 6px;
+        }
+
+        /* Main Content */
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .section-heading {
+            text-align: center;
+            color: var(--dark);
+            margin: 20px 0 40px;
+            font-size: 2.2rem;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s forwards;
+        }
+
+        .section-heading::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+
+        /* Worker Cards */
+        .workers-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .worker-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s forwards;
+            animation-delay: calc(var(--delay) * 0.15s);
+        }
+
+        .worker-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .worker-header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(to right, rgba(52, 152, 219, 0.05), rgba(46, 204, 113, 0.05));
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .worker-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .worker-card:hover .worker-img {
+            transform: scale(1.1);
+        }
+
+        .worker-info {
+            margin-left: 20px;
+            flex: 1;
+        }
+
+        .worker-name {
+            font-size: 1.25rem;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+
+        .worker-details {
+            padding: 20px;
+        }
+
+        .detail-item {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-item i {
+            color: var(--primary);
+            font-size: 18px;
+            width: 24px;
+            margin-right: 10px;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .stars {
+            color: #f39c12;
+            letter-spacing: 2px;
+            margin-right: 8px;
+        }
+        
+        .rating-number {
+            font-weight: bold;
+        }
+
+        .worker-footer {
+            padding: 15px 20px;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .book-btn {
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .book-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .book-btn i {
+            margin-left: 8px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .badge {
+            background-color: var(--secondary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 2rem;
+            }
+            
+            .navbar a {
+                padding: 15px 16px;
+                font-size: 0.9rem;
+            }
+
+            .worker-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .worker-img {
+                margin-bottom: 15px;
+                width: 100px;
+                height: 100px;
+            }
+
+            .worker-info {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="app-title">WorkforceConect</h1>
+        <p class="subtitle">Find skilled professionals for all your needs</p>
+    </header>
+
+    <nav>
+        <div class="navbar" id="domain-navbar">
+            <a href="#" data-domain="plumbers" class="active"><i class="fas fa-wrench"></i>Plumbers</a>
+            <a href="#" data-domain="carpenters"><i class="fas fa-hammer"></i>Carpenters</a>
+            <a href="#" data-domain="house-cleaning"><i class="fas fa-broom"></i>House Cleaning</a>
+            <a href="#" data-domain="electricians"><i class="fas fa-bolt"></i>Electricians</a>
+            <a href="#" data-domain="painters"><i class="fas fa-paint-roller"></i>Painters</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 id="labour-list-heading" class="section-heading">Plumbers Labour List</h2>
+        
+        <div id="workers-section" class="workers-container">
+            <!-- Workers will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        // Worker data structure with expanded details
+        const workerData = {
+            plumbers: [
+                {
+                    name: "John Smith",
+                    experience: "10 years",
+                    rating: "4.8",
+                    reviews: "243",
+                    price: "$50/hr",
+                    location: "Downtown",
+                    available: "Available today",
+                    specialty: "Pipe repairs, Installations",
+                    profilePic: "/api/placeholder/200/200"
+                },
+                {
+                    name: "Mike Johnson",
+                    experience: "7 years",
+                    rating: "4.5",
+                    reviews: "178",
+                    price: "$45/hr",
+                    location: "Westside",
+                    available: "Available tomorrow",
+                    specialty: "Bathroom fixtures, Leaks",
+                    profilePic: "/api/placeholder/200/200"
+                },
+                {
+                    name: "Laura Garcia",
+                    experience: "12 years",
+                    rating: "4.9",
+                    reviews: "301",
+                    price: "$55/hr",
+                    location: "Northside",
+                    available: "Available today",
+                    specialty: "Emergency repairs, Water heaters",
+                    profilePic: "/api/placeholder/200/200"
+                }
+            ],
+            carpenters: [
+                {
+                    name: "David Brown",
+                    experience: "12 years",
+                    rating: "4.9",
+                    reviews: "187",
+                    price: "$60/hr",
+                    location: "Eastside",
+                    available: "Available today",
+                    specialty: "Custom furniture, Decks",
+                    profilePic: "/api/placeholder/200/200"
+                },
+                {
+                    name: "Robert Wilson",
+                    experience: "8 years",
+                    rating: "4.6",
+                    reviews: "156",
+                    price: "$55/hr",
+                    location: "Southside",
+                    available: "Available in 2 days",
+                    specialty: "Cabinets, Flooring",
+                    profilePic: "/api/placeholder/200/200"
+                }
+            ],
+            "house-cleaning": [
+                {
+                    name: "Sarah Miller",
+                    experience: "5 years",
+                    rating: "4.7",
+                    reviews: "211",
+                    price: "$35/hr",
+                    location: "Central",
+                    available: "Available today",
+                    specialty: "Deep cleaning, Move-in/out",
+                    profilePic: "/api/placeholder/200/200"
+                },
+                {
+                    name: "Emily Davis",
+                    experience: "6 years",
+                    rating: "4.6",
+                    reviews: "189",
+                    price: "$30/hr",
+                    location: "Westside",
+                    available: "Available tomorrow",
+                    specialty: "Eco-friendly cleaning, Windows",
+                    profilePic: "/api/placeholder/200/200"
+                }
+            ],
+            electricians: [
+                {
+                    name: "Tom Anderson",
+                    experience: "9 years",
+                    rating: "4.8",
+                    reviews: "203",
+                    price: "$65/hr",
+                    location: "Downtown",
+                    available: "Available today",
+                    specialty: "Wiring, Panel upgrades",
+                    profilePic: "/api/placeholder/200/200"
+                },
+                {
+                    name: "Alex Rodriguez",
+                    experience: "7 years",
+                    rating: "4.5",
+                    reviews: "142",
+                    price: "$60/hr",
+                    location: "Eastside",
+                    available: "Available in 3 days",
+                    specialty: "Lighting, Smart home",
+                    profilePic: "/api/placeholder/200/200"
+                }
+            ],
+            painters: [
+                {
+                    name: "Chris Taylor",
+                    experience: "8 years",
+                    rating: "4.7",
+                    reviews: "167",
+                    price: "$40/hr",
+                    location: "Northside",
+                    available: "Available tomorrow",
+                    specialty: "Interior, Texture work",
+                    profilePic: "/api/placeholder/200/200"
+                },
+                {
+                    name: "Ryan Moore",
+                    experience: "6 years",
+                    rating: "4.5",
+                    reviews: "124",
+                    price: "$35/hr",
+                    location: "Southside",
+                    available: "Available today",
+                    specialty: "Exterior, Deck staining",
+                    profilePic: "/api/placeholder/200/200"
+                }
+            ]
+        };
+
+        // Generate stars based on rating
+        function getStars(rating) {
+            const fullStars = Math.floor(rating);
+            const halfStar = rating % 1 >= 0.5;
+            let stars = '';
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '★';
+            }
+            
+            if (halfStar) {
+                stars += '★';
+            }
+            
+            return stars;
+        }
+
+        // Function to create worker cards
+        function createWorkerCards(domain) {
+            const workersSection = document.getElementById('workers-section');
+            const labourListHeading = document.getElementById('labour-list-heading');
+            
+            // Update navigation active state
+            document.querySelectorAll('.navbar a').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-domain="${domain}"]`).classList.add('active');
+            
+            // Clear previous workers
+            workersSection.innerHTML = ''; 
+            
+            // Update heading text
+            const formattedDomain = domain.replace('-', ' ');
+            labourListHeading.textContent = `${formattedDomain.charAt(0).toUpperCase() + formattedDomain.slice(1)} Labour List`;
+            labourListHeading.style.animation = 'none';
+            void labourListHeading.offsetWidth; // Trigger reflow
+            labourListHeading.style.animation = 'fadeInUp 0.8s forwards';
+
+            // Add worker cards with staggered animation delay
+            if (workerData[domain] && workerData[domain].length > 0) {
+                workerData[domain].forEach((worker, index) => {
+                    const workerCard = document.createElement('div');
+                    workerCard.classList.add('worker-card');
+                    workerCard.style.setProperty('--delay', index + 1);
+                    workerCard.innerHTML = `
+                        <div class="worker-header">
+                            <img src="${worker.profilePic}" alt="${worker.name}" class="worker-img">
+                            <div class="worker-info">
+                                <h3 class="worker-name">${worker.name}</h3>
+                                <div class="rating">
+                                    <div class="stars">${getStars(parseFloat(worker.rating))}</div>
+                                    <span class="rating-number">${worker.rating}</span>
+                                    <span style="margin-left: 5px;">(${worker.reviews} reviews)</span>
+                                </div>
+                                <span class="badge">${worker.available}</span>
+                            </div>
+                        </div>
+                        <div class="worker-details">
+                            <div class="detail-item">
+                                <i class="fas fa-briefcase"></i>
+                                <span>Experience: ${worker.experience}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-tools"></i>
+                                <span>Specialty: ${worker.specialty}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Location: ${worker.location}</span>
+                            </div>
+                        </div>
+                        <div class="worker-footer">
+                            <div class="price">${worker.price}</div>
+                            <button class="book-btn">Book Now <i class="fas fa-arrow-right"></i></button>
+                        </div>
+                    `;
+                    workersSection.appendChild(workerCard);
+                });
+            } else {
+                // Show empty state
+                workersSection.innerHTML = `
+                    <div class="empty-state">
+                        <i class="far fa-frown"></i>
+                        <h3>No workers available</h3>
+                        <p>We couldn't find any workers in this category. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Event listeners for domain navigation
+        document.getElementById('domain-navbar').addEventListener('click', (e) => {
+            if (e.target.matches('[data-domain]')) {
+                e.preventDefault();
+                const domain = e.target.dataset.domain;
+                createWorkerCards(domain);
+            } else if (e.target.parentElement.matches('[data-domain]')) {
+                e.preventDefault();
+                const domain = e.target.parentElement.dataset.domain;
+                createWorkerCards(domain);
+            }
+        });
+
+        // Initialize with plumbers
+        document.addEventListener('DOMContentLoaded', () => {
+            createWorkerCards('plumbers');
+        });
+    </script>
+</body>
+</html>

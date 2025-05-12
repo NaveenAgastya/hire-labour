@@ -495,9 +495,9 @@
         function makePayment() {
     var options = {
       key: "rzp_test_hIOpXSWVpEGXMN", // Your Razorpay API Key
-      amount: "1000", // Amount in the smallest currency unit (for example, 1000 paise = 10 INR)
+      amount: "200000", // Amount in the smallest currency unit (for example, 1000 paise = 10 INR)
       currency: "INR", // Currency
-      name: "My Website", // Your website name
+      name: "WorkForceConnect", // Your website name
       description: "Payment for services",
       image: "https://example.com/logo.png", // Your website logo (optional)
       handler: function (response) {
@@ -505,12 +505,12 @@
         // You can send this payment ID to your server to verify the payment
       },
       prefill: {
-        name: "Customer Name",
-        email: "customer@example.com",
-        contact: "9999999999"
+        name: "Naveen",
+        email: "itznaveenagsthya@gmail.com",
+        contact: "9110677146"
       },
       notes: {
-        address: "Address details"
+        address: "Bengaluru"
       },
       theme: {
         color: "#F37254" // Customize the theme color (optional)

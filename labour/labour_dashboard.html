@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Labor Dashboard</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/fontawesome.min.css" integrity="sha512-v8QQ0YQ3H4K6Ic3PJkym91KoeNT5S3PnDKvqnwqFD1oiqIl653crGZplPdU5KKtHjO0QKcQ2aUlQZYjHczkmGw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+   <style>
         :root {
             --primary-color: #3498db;
             --secondary-color: #2ecc71;
@@ -665,16 +668,8 @@
                 <a href="#" class="menu-item">
                     <i class="fas fa-calendar-alt"></i> Bookings
                 </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-clock"></i> Availability
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-star"></i> Reviews
-                </a>
-                <a href="notifications.html" class="menu-item active">
-                    <i class="fas fa-bell"></i> Notifications
-                </a>
-                <a href="#" class="menu-item">
+                
+                <a href="./notication_payment.html" class="menu-item">
                     <i class="fas fa-wallet"></i> Payments
                 </a>
                 <a href="profile_settings.html" class="menu-item">
@@ -819,7 +814,7 @@
                 <p>Are you sure you want to pay $300.00 to the company?</p>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" id="cancelPaymentBtn">Cancel</button>
-                    <button class="btn btn-primary" id="confirmPaymentBtn">Confirm Payment</button>
+                    <button class="btn btn-primary" id="pay-button" onclick="makePayment()">Confirm & Pay</button>
                 </div>
             </div>
         </div>
@@ -943,7 +938,8 @@
     <div class="notifier" id="notifier"></div>
 
     <script>
-         // Tab functionality
+
+        // Tab functionality
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
             
@@ -1354,6 +1350,39 @@
 
         // Initialize everything when the page loads
         document.addEventListener('DOMContentLoaded', initDashboard);
+
+
+
+      // Payment Razor Pay
+
+    function makePayment() {
+    var options = {
+      key: "rzp_test_hIOpXSWVpEGXMN", // Your Razorpay API Key
+      amount: "200000", // Amount in the smallest currency unit (for example, 1000 paise = 10 INR)
+      currency: "INR", // Currency
+      name: "WorkForceConnect", // Your website name
+      description: "Payment for services",
+      image: "https://example.com/logo.png", // Your website logo (optional)
+      handler: function (response) {
+        alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+        // You can send this payment ID to your server to verify the payment
+      },
+      prefill: {
+        name: "Naveen",
+        email: "itznaveenagsthya@gmail.com",
+        contact: "9110677146"
+      },
+      notes: {
+        address: "Bengaluru"
+      },
+      theme: {
+        color: "#F37254" // Customize the theme color (optional)
+      }
+    };
+
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+  }
     </script>
 </body>
 </html>

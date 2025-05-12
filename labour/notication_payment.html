@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Dashboard - Notifications</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #e74c3c;
+            --light-bg: #f5f5f5;
+            --dark-text: #333;
+            --light-text: #fff;
+            --border-color: #ddd;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: var(--light-text);
+            padding: 20px 0;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .sidebar-header h3 {
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-header p {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 10px auto;
+            display: block;
+            background-color: #3498db;
+            text-align: center;
+            line-height: 80px;
+            font-size: 30px;
+        }
+        
+        .menu-items {
+            padding: 20px 0;
+        }
+        
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--light-text);
+        }
+        
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .menu-item.active {
+            background-color: var(--primary-color);
+        }
+        
+        .menu-item i {
+            margin-right: 15px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .notification-bell {
+            position: relative;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Card Styles */
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* Button Styles */
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-secondary {
+            background-color: #7f8c8d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #95a5a6;
+        }
+        
+        .btn-danger {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        /* Badge Styles */
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-info {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .badge-success {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .badge-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        /* Notification Styles */
+        .notification-list {
+            margin-bottom: 30px;
+        }
+        
+        .notification-item {
+            display: flex;
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
+        }
+        
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f1f1f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .notification-icon.primary {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+        
+        .notification-icon.success {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+        }
+        
+        .notification-icon.warning {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: #f39c12;
+        }
+        
+        .notification-icon.danger {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .notification-message {
+            color: #666;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+        
+        .notification-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .unread {
+            position: relative;
+        }
+        
+        .unread::before {
+            content: "";
+            position: absolute;
+            left: -15px;
+            top: 20px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+        }
+        
+        /* Payment Section Styles */
+        .payment-section {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .payment-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .payment-form-row {
+            grid-column: span 2;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-item-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .history-item-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .history-item-date {
+            font-size: 12px;
+            color: #777;
+        }
+        
+        .history-item-amount {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 50%;
+            max-width: 600px;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        .tab {
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .tab button:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .tab button.active {
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .tabcontent {
+            display: none;
+            padding: 15px 0;
+        }
+        
+        .active-tab {
+            display: block;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 10px;
+            }
+            
+            .sidebar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 20px;
+            }
+            
+            .profile-pic {
+                width: 50px;
+                height: 50px;
+                line-height: 50px;
+                font-size: 20px;
+                margin: 0;
+            }
+            
+            .menu-items {
+                display: flex;
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+            
+            .menu-item {
+                white-space: nowrap;
+                padding: 10px 15px;
+            }
+            
+            .payment-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .payment-form-row {
+                grid-column: span 1;
+            }
+            
+            .modal-content {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div>
+                    <div class="profile-pic">JD</div>
+                    <h3>John Doe</h3>
+                    <p>Worker ID: #1234</p>
+                </div>
+            </div>
+            <div class="menu-items">
+                <a href="labour_dashboard.html" class="menu-item">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-calendar-alt"></i> Bookings
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-clock"></i> Availability
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-star"></i> Reviews
+                </a>
+                <a href="notifications.html" class="menu-item active">
+                    <i class="fas fa-bell"></i> Notifications
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-wallet"></i> Payments
+                </a>
+                <a href="profile_settings.html" class="menu-item">
+                    <i class="fas fa-user-cog"></i> Profile
+                </a>
+                <a href="change_password.html" class="menu-item">
+                    <i class="fas fa-lock"></i> Password
+                </a>
+                <a href="/login.html" class="menu-item">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Notifications & Payments</h1>
+                <div class="notification-bell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-count">5</span>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab">
+                <button class="tablinks active" onclick="openTab(event, 'notifications')">Notifications</button>
+                <button class="tablinks" onclick="openTab(event, 'payments')">Make Payment</button>
+                <button class="tablinks" onclick="openTab(event, 'history')">Payment History</button>
+            </div>
+            
+            <!-- Notifications Tab Content -->
+            <div id="notifications" class="tabcontent active-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Your Notifications</h2>
+                        <div>
+                            <button class="btn btn-secondary" onclick="markAllAsRead()">
+                                <i class="fas fa-check-double"></i> Mark All as Read
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="notification-list">
+                        <!-- Unread Notification Item -->
+                        <div class="notification-item unread">
+                            <div class="notification-icon success">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="notification-content">
+                                <h4 class="notification-title">New Booking Confirmed</h4>
+                                <p class="notification-message">Your booking with Client #5678 has been confirmed for tomorrow at 2:00 PM.</p>
+                                <p class="notification-time">10 minutes ago</p>
+                                <div class="notification-actions">
+                                    <button class="btn btn-primary btn-sm" onclick="viewBookingDetails()">View Details</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="markAsRead(this)">Mark as Read</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Unread Notification Item -->
+                        <div class="notification-item unread">
+                            <div class="notification-icon primary">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="notification-content">
+                                <h4 class="notification-title">New Review Received</h4>
+                                <p class="notification-message">You've received a 5-star review from Client #4321. "Excellent service, will definitely hire again!"</p>
+                                <p class="notification-time">1 hour ago</p>
+                                <div class="notification-actions">
+                                    <button class="btn btn-primary btn-sm" onclick="viewReview()">View Review</button>
+                                    <button class="btn btn-secondary btn-sm" onclick="markAsRead(this)">Mark as Read</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Read Notification Item -->
+                        <div class="notification-item">
+                            <div class="notification-icon warning">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="notification-content">
+                                <h4 class="notification-title">Payment Received</h4>
+                                <p class="notification-message">You've received a payment of $150 for Job #1234.</p>
+                                <p class="notification-time">Yesterday</p>
+                                <div class="notification-actions">
+                                    <button class="btn btn-primary btn-sm" onclick="viewPayment()">View Payment</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Read Notification Item -->
+                        <div class="notification-item">
+                            <div class="notification-icon danger">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="notification-content">
+                                <h4 class="notification-title">Payment Due Reminder</h4>
+                                <p class="notification-message">You have a pending payment of $50 due to the company for platform fees.</p>
+                                <p class="notification-time">2 days ago</p>
+                                <div class="notification-actions">
+                                    <button class="btn btn-primary btn-sm" onclick="payNow()">Pay Now</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Read Notification Item -->
+                        <div class="notification-item">
+                            <div class="notification-icon primary">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div class="notification-content">
+                                <h4 class="notification-title">System Announcement</h4>
+                                <p class="notification-message">We've updated our platform policies. Please review the changes in your account settings.</p>
+                                <p class="notification-time">1 week ago</p>
+                                <div class="notification-actions">
+                                    <button class="btn btn-primary btn-sm" onclick="viewPolicies()">View Policies</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payments Tab Content -->
+            <div id="payments" class="tabcontent">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Pay to Company</h2>
+                    </div>
+                    
+                    <div class="payment-form">
+                        <div class="form-group">
+                            <label for="payment-amount">Amount ($)</label>
+                            <input type="number" id="payment-amount" min="1" step="0.01" placeholder="Enter amount">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-type">Payment Type</label>
+                            <select id="payment-type">
+                                <option value="platform-fee">Platform Fee</option>
+                                <option value="subscription">Subscription</option>
+                                <option value="service-charge">Service Charge</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group payment-form-row">
+                            <label for="payment-description">Description</label>
+                            <input type="text" id="payment-description" placeholder="Payment description">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-method">Payment Method</label>
+                            <select id="payment-method">
+                                <option value="credit-card">Credit Card</option>
+                                <option value="debit-card">Debit Card</option>
+                                <option value="bank-transfer">Bank Transfer</option>
+                                <option value="paypal">PayPal</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment-date">Payment Date</label>
+                            <input type="date" id="payment-date">
+                        </div>
+                        
+                        <div class="form-group payment-form-row">
+                            <button class="btn btn-primary" onclick="processPayment()">Process Payment</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Credit Card Payment Form (Initially Hidden) -->
+                <div id="credit-card-form" class="card" style="display: none;">
+                    <div class="card-header">
+                        <h2>Credit Card Details</h2>
+                    </div>
+                    
+                    <div class="payment-form">
+                        <div class="form-group">
+                            <label for="card-number">Card Number</label>
+                            <input type="text" id="card-number" placeholder="XXXX XXXX XXXX XXXX">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="card-name">Cardholder Name</label>
+                            <input type="text" id="card-name" placeholder="Name on card">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="expiry-date">Expiry Date</label>
+                            <input type="text" id="expiry-date" placeholder="MM/YY">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" placeholder="XXX">
+                        </div>
+                        
+                        <div class="form-group payment-form-row">
+                            <button class="btn btn-primary" onclick="confirmPayment()">Confirm Payment</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment History Tab Content -->
+            <div id="history" class="tabcontent">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Payment History</h2>
+                        <div>
+                            <button class="btn btn-secondary" onclick="downloadPaymentHistory()">
+                                <i class="fas fa-download"></i> Download History
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="history-list">
+                        <div class="history-item">
+                            <div class="history-item-details">
+                                <span class="history-item-title">Platform Fee</span>
+                                <span class="history-item-date">May 10, 2025</span>
+                            </div>
+                            <span class="history-item-amount">$50.00</span>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-item-details">
+                                <span class="history-item-title">Monthly Subscription</span>
+                                <span class="history-item-date">April 15, 2025</span>
+                            </div>
+                            <span class="history-item-amount">$29.99</span>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-item-details">
+                                <span class="history-item-title">Service Charge</span>
+                                <span class="history-item-date">March 22, 2025</span>
+                            </div>
+                            <span class="history-item-amount">$15.50</span>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-item-details">
+                                <span class="history-item-title">Platform Fee</span>
+                                <span class="history-item-date">February 18, 2025</span>
+                            </div>
+                            <span class="history-item-amount">$50.00</span>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-item-details">
+                                <span class="history-item-title">Annual Membership</span>
+                                <span class="history-item-date">January 05, 2025</span>
+                            </div>
+                            <span class="history-item-amount">$199.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Confirmation Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('payment-modal')">&times;</span>
+            <h2>Payment Confirmation</h2>
+            <p>You are about to make a payment of <strong id="modal-amount">$0.00</strong> to the company.</p>
+            <p>Payment Method: <span id="modal-method">Credit Card</span></p>
+            <p>Payment Description: <span id="modal-description">N/A</span></p>
+            <p>Payment Date: <span id="modal-date">Today</span></p>
+            
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeModal('payment-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="finalizePayment()">Confirm Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('success-modal')">&times;</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <i class="fas fa-check-circle" style="font-size: 60px; color: #2ecc71;"></i>
+            </div>
+            <h2 style="text-align: center;">Payment Successful!</h2>
+            <p style="text-align: center;">Your payment of <strong id="success-amount">$0.00</strong> has been processed successfully.</p>
+            <p style="text-align: center;">Transaction ID: <span id="transaction-id">TX123456789</span></p>
+            <p style="text-align: center;">A receipt has been sent to your email.</p>
+            
+            <div style="margin-top: 20px; display: flex; justify-content: center;">
+                <button class="btn btn-primary" onclick="closeModal('success-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Tab functionality
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Hide all tab content
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active-tab");
+            }
+            
+            // Remove "active" class from all tab buttons
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            
+            // Show the current tab and add "active" class to the button
+            document.getElementById(tabName).classList.add("active-tab");
+            evt.currentTarget.className += " active";
+        }
+        
+        // Mark notification as read
+        function markAsRead(button) {
+            const notificationItem = button.closest('.notification-item');
+            notificationItem.classList.remove('unread');
+            button.remove();
+            
+            // Update notification count
+            updateNotificationCount();
+        }
+        
+        // Mark all notifications as read
+        function markAllAsRead() {
+            const unreadNotifications = document.querySelectorAll('.notification-item.unread');
+            unreadNotifications.forEach(item => {
+                item.classList.remove('unread');
+                const markAsReadBtn = item.querySelector('.btn-secondary');
+                if (markAsReadBtn) markAsReadBtn.remove();
+            });
+            
+            // Update notification count
+            updateNotificationCount();
+        }
+        
+        // Update notification count
+        function updateNotificationCount() {
+            const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+            const notificationCount = document.querySelector('.notification-count');
+            
+            if (unreadCount > 0) {
+                notificationCount.textContent = unreadCount;
+                notificationCount.style.display = 'flex';
+            } else {
+                notificationCount.style.display = 'none';
+            }
+        }
+        
+        // View booking details
+        function viewBookingDetails() {
+            // In a real app, this would navigate to the booking details page
+            alert('Navigating to booking details...');
+        }
+        
+        // View review
+        function viewReview() {
+            // In a real app, this would navigate to the reviews page
+            alert('Navigating to review details...');
+        }
+        
+        // View payment
+        function viewPayment() {
+            // In a real app, this would show payment details
+            alert('Viewing payment details...');
+        }
+        
+        // View policies
+        function viewPolicies() {
+            // In a real app, this would navigate to the policies page
+            alert('Navigating to policies page...');
+        }
+        
+        // Pay Now - Redirect to payments tab
+        function payNow() {
+            openTab({currentTarget: document.querySelectorAll('.tablinks')[1]}, 'payments');
+            
+            // Pre-fill payment form
+            document.getElementById('payment-amount').value = '50';
+            document.getElementById('payment-type').value = 'platform-fee';
+            document.getElementById('payment-description').value = 'Platform fees payment';
+        }
+        
+        // Process payment
+        function processPayment() {
+            const amount = document.getElementById('payment-amount').value;
+            const type = document.getElementById('payment-type').value;
+            const description = document.getElementById('payment-description').value;
+            const method = document.getElementById('payment-method').value;
+            const date = document.getElementById('payment-date').value || new Date().toISOString().split('T')[0];
+            
+            // Form validation
+            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+            
+            if (!description) {
+                alert('Please enter a payment description.');
+                return;
+            }
+            
+            // Show credit card form if payment method is credit/debit card
+            if (method === 'credit-card' || method === 'debit-card') {
+                document.getElementById('credit-card-form').style.display = 'block';
+                
+                // Scroll to credit card form
+                document.getElementById('credit-card-form').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            } else {
+                // For other payment methods, show confirmation modal directly
+                showPaymentModal(amount, method, description, date);
+            }
+        }
+        
+        // Confirm payment after entering credit card details
+        function confirmPayment() {
+            const amount = document.getElementById('payment-amount').value;
+            const method = document.getElementById('payment-method').value;
+            const description = document.getElementById('payment-description').value;
+            const date = document.getElementById('payment-date').value || new Date().toISOString().split('T')[0];
+            
+            // Credit card validation
+            const cardNumber = document.getElementById('card-number').value;
+            const cardName = document.getElementById('card-name').value;
+            const expiryDate = document.getElementById('expiry-date').value;
+            const cvv = document.getElementById('cvv').value;
+            
+            if (!cardNumber || cardNumber.replace(/\s/g, '').length !== 16) {
+                alert('Please enter a valid 16-digit card number.');
+                return;
+            }
+            
+            if (!cardName) {
+                alert('Please enter the cardholder name.');
+                return;
+            }
+            
+            if (!expiryDate || !expiryDate.match(/^\d{2}\/\d{2}$/)) {
+                alert('Please enter expiry date in MM/YY format.');
+                return;
+            }
+            
+            if (!cvv || cvv.length !== 3 || isNaN(cvv)) {
+                alert('Please enter a valid 3-digit CVV code.');
+                return;
+            }
+            
+            // Show payment confirmation modal
+            showPaymentModal(amount, method, description, date);
+        }
+        
+        // Show payment confirmation modal
+        function showPaymentModal(amount, method, description, date) {
+            // Format date
+            const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Update modal content
+            document.getElementById('modal-amount').textContent = ' + parseFloat(amount).toFixed(2)';
+            document.getElementById('modal-method').textContent = method.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            document.getElementById('modal-description').textContent = description;
+            document.getElementById('modal-date').textContent = formattedDate;
+            
+            // Show modal
+            document.getElementById('payment-modal').style.display = 'block';
+        }
+        
+        // Finalize payment
+        function finalizePayment() {
+            // Close payment confirmation modal
+            closeModal('payment-modal');
+            
+            // Get payment amount for success message
+            const amount = document.getElementById('payment-amount').value;
+            
+            // Generate a random transaction ID
+            const transactionId = 'TX' + Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+            
+            // Update success modal content
+            document.getElementById('success-amount').textContent = ' + parseFloat(amount).toFixed(2)';
+            document.getElementById('transaction-id').textContent = transactionId;
+            
+            // Show success modal
+            document.getElementById('success-modal').style.display = 'block';
+            
+            // Reset payment form
+            document.getElementById('payment-amount').value = '';
+            document.getElementById('payment-description').value = '';
+            document.getElementById('payment-date').value = '';
+            document.getElementById('credit-card-form').style.display = 'none';
+            
+            if (document.getElementById('card-number')) {
+                document.getElementById('card-number').value = '';
+                document.getElementById('card-name').value = '';
+                document.getElementById('expiry-date').value = '';
+                document.getElementById('cvv').value = '';
+            }
+            
+            // Add payment to history (in a real app, this would be done via API)
+            addPaymentToHistory(amount, document.getElementById('payment-type').value, new Date());
+        }
+        
+        // Add payment to history
+        function addPaymentToHistory(amount, type, date) {
+            const historyList = document.querySelector('.history-list');
+            
+            // Format payment type
+            const formattedType = type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            
+            // Format date
+            const formattedDate = date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Create new history item
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="history-item-details">
+                    <span class="history-item-title">${formattedType}</span>
+                    <span class="history-item-date">${formattedDate}</span>
+                </div>
+                <span class="history-item-amount">${parseFloat(amount).toFixed(2)}</span>
+            `;
+            
+            // Add to top of history list
+            historyList.insertBefore(historyItem, historyList.firstChild);
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Download payment history
+        function downloadPaymentHistory() {
+            // In a real app, this would generate a CSV or PDF file
+            alert('Downloading payment history...');
+        }
+        
+        // Run when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update notification count
+            updateNotificationCount();
+            
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('payment-date').value = today;
+            
+            // Close modals when clicking outside
+            window.onclick = function(event) {
+                const modals = document.getElementsByClassName('modal');
+                for (let i = 0; i < modals.length; i++) {
+                    if (event.target === modals[i]) {
+                        modals[i].style.display = 'none';
+                    }
+                }
+            };
+        });
+    </script>
+</body>
+</html>
